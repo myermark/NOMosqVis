@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573071133045.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3388898538",
+    "id" : "7771542E",
+    "lastKnownWriteTime" : 1573161960,
+    "last_content_update" : -2147483648,
+    "path" : "Q:/NOLA Projects/Mosquito Surveillance/MosqVisualization.R",
+    "project_path" : "MosqVisualization.R",
+    "properties" : {
+        "cursorPosition" : "6,1",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

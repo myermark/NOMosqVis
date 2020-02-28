@@ -27,9 +27,9 @@ light <- read_excel("2019/CDC Light/121119Mosquito ID sheet_for analysis_CDC_Lig
 bg <- read_excel("2019/BG Sentinel/2019_Mosquito ID sheet_for analysis_BG_Sentinel.xls", sheet=1, skip =1)
 
 #Get the unique trap locations for each 
-grav <- grav %>% select(FID, long, lat) %>% mutate(type = "Gravid") %>% unique() %>% drop_na()
-light <- light %>% select(FID, long, lat) %>% mutate(type = "Light") %>% unique() %>% drop_na()
-bg <- bg %>% select(FID, long, lat) %>% mutate(type = "BG Sentinel") %>% unique() %>% drop_na()
+grav <- grav %>% select(FID, Address, long, lat) %>% mutate(type = "Gravid") %>% unique() %>% drop_na()
+light <- light %>% select(FID, Address, long, lat) %>% mutate(type = "Light") %>% unique() %>% drop_na()
+bg <- bg %>% select(FID, Address, long, lat) %>% mutate(type = "BG Sentinel") %>% unique() %>% drop_na()
 
 #Merge into one dataset
 traps <- rbind(grav, light, bg)
@@ -50,10 +50,11 @@ nola_stamen <- get_stamenmap(bbox = borders, zoom = 11, maptype = "terrain")
 map <- ggmap(nola_stamen)
 
 #Plot locations of traps colored by trap type
-tiff(filename = "./2019/TrapLocations.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw", type = "cairo")
+pdf(file = "./2019/TrapLocationsLabels.pdf", height = 8, width = 9)
 map + geom_point(data = traps, pch=21, fill="lightblue", stroke = 1, aes(x=long, y= lat))  + 
   labs(x = "Longitude", y = "Latitude") + 
   ggtitle("New Orleans 2019 Mosquito Trap Locations") +
+  geom_text(data = traps, aes(x=long, y=lat, label = Address), nudge_x = 0.001, nudge_y = 0.005, size = 2) +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=18, face = "bold"))

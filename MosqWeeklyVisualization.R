@@ -3,7 +3,7 @@
 #
 # Author: Mark Myer
 #
-# Date: 1/14/2019
+# Date: 2/12/2020
 #
 # Purpose: To format and summarize data from mosquito surveillance for plotting
 #
@@ -22,13 +22,15 @@ library(RColorBrewer)
 library(viridisLite)
 library(emoGG)
 
+setwd("/Volumes/Mark Drive/NOLA/Mosquito Surveillance")
+
 #Import data
 #Gravid traps
-grav <- read_excel("2019/Gravid/121019Mosquito ID sheet_for analysis_Gravid_2019_JWB.xls.xlsx") 
+grav <- read_excel("2020/Gravid/2020Gravid and pools.xlsx") 
 
 grav <- grav %>%
         mutate(Date = as.Date(Date)) %>%
-        mutate_at(c(names(grav)[8:(ncol(grav)-1)]), as.integer) #Errors are OK, it's just warning that the "." were turned into NAs
+        mutate_at(c(names(grav)[9:(ncol(grav)-1)]), as.integer) #Errors are OK, it's just warning that the "." were turned into NAs
 
 grav <- mutate(grav, `Culex sp._total` = rowSums(grav[grep("Culex", names(grav))], na.rm = TRUE), `Aedes sp._total` = rowSums(grav[grep("Aedes", names(grav))], na.rm = TRUE))
 
@@ -36,7 +38,7 @@ grav <- mutate(grav, `Culex sp._total` = rowSums(grav[grep("Culex", names(grav))
 grav_subset <- grav %>% filter(week(Date) == max(week(Date)))
 
 #Light traps 
-light <- rbind(read_excel("2019/CDC Light/121119Mosquito ID sheet_for analysis_CDC_Light.xlsx", sheet = 1), read_excel("2019/CDC Light/121119Mosquito ID sheet_for analysis_CDC_Light.xlsx", sheet = 2)[,1:99])
+light <- rbind(read_excel("2020/CDC Light/2020CDCLTs.xlsx", sheet = 1), read_excel("2020/CDC Light/2020CDCLTs.xlsx", sheet = 2))
 
 light <- light %>%
   mutate(Date = as.Date(Date)) %>%
@@ -47,16 +49,16 @@ light <- mutate(light, `Culex sp._total` = rowSums(light[grep("Culex", names(lig
 #Subset to only the most recent week 
 light_subset <- light %>% filter(week(Date) == (max(week(Date)))) 
 
-#BG Sentinel traps
-# bg <- read_excel("BG_2019.xls")
-# 
-# bg <- bg %>%
-#       mutate(Date = as.Date(Date)) %>%
-#       mutate_at(c(names(bg)[7:(ncol(bg)-1)]), as.integer) %>% 
-#       mutate(lat_temp = lat, lat = long, long = lat_temp) %>%  #Lat and Long were reversed so need to fix them here
-#       select(-lat_temp)
-# 
-# bg <- bg %>% mutate(`Culex sp._total` = rowSums(.[grep("Culex", names(.))], na.rm = TRUE), `Aedes sp._total` = rowSums(.[grep("Aedes", names(.))], na.rm = TRUE))
+#G Sentinel traps
+bg <- read_excel("2020/BG Sentinel/BG2020Data.xlsx")
+
+bg <- bg %>%
+      mutate(Date = as.Date(Date)) %>%
+      mutate_at(c(names(bg)[7:(ncol(bg)-1)]), as.integer) #%>%
+      #mutate(lat_temp = lat, lat = long, long = lat_temp) %>%  #Lat and Long were reversed so need to fix them here
+      #select(-lat_temp)
+
+bg <- bg %>% mutate(`Culex sp._total` = rowSums(.[grep("Culex", names(.))], na.rm = TRUE), `Aedes sp._total` = rowSums(.[grep("Aedes", names(.))], na.rm = TRUE))
 
 #Summarize by trap
 #Custom function for the most frequently appearing string
@@ -68,16 +70,16 @@ calculate_mode <- function(x) {
 summ_grav <- grav_subset %>%
   group_by(FID) %>% 
   summarize(address = calculate_mode(Address),
-            long = median(long),
-            lat = median(lat),
-            cul_total = sum(`Culex sp._total`, na.rm=T),
+            long = median(Long),
+            lat = median(Lat),
+            cul_total = sum(`Culex sp._total`, na.rm=T), #In case there are more than one observation per week, this calculate the total
             cul_mean = mean(`Culex sp._total`, na.rm=T),
             aed_total = sum(`Aedes sp._total`, na.rm=T),
             aed_mean = mean(`Aedes sp._total`, na.rm=T))
 
 summ_light <- light_subset %>%
-  group_by(FID) %>% 
-  summarize(address = calculate_mode(Address),
+  group_by(Address) %>% 
+  summarize(FID = mean(FID, na.rm = T),
             long = median(long),
             lat = median(lat),
             cul_total = sum(`Culex sp._total`, na.rm=T),
@@ -85,16 +87,16 @@ summ_light <- light_subset %>%
             aed_total = sum(`Aedes sp._total`, na.rm=T),
             aed_mean = mean(`Aedes sp._total`, na.rm=T))
 
-# summ_bg <- bg %>%
-#   group_by(FID) %>% 
-#   summarize(address = calculate_mode(Address),
-#             long = median(long),
-#             lat = median(lat),
-#             cul_total = sum(`Culex sp._total`, na.rm=T),
-#             cul_mean = mean(`Culex sp._total`, na.rm=T),
-#             aed_total = sum(`Aedes sp._total`, na.rm=T),
-#             aed_mean = mean(`Aedes sp._total`, na.rm=T)) %>%
-#   na.omit() #Get rid of superfluous NA row
+summ_bg <- bg %>%
+  group_by(FID) %>%
+  summarize(address = calculate_mode(Address),
+            long = median(Long),
+            lat = median(Lat),
+            cul_total = sum(`Culex sp._total`, na.rm=T),
+            cul_mean = mean(`Culex sp._total`, na.rm=T),
+            aed_total = sum(`Aedes sp._total`, na.rm=T),
+            aed_mean = mean(`Aedes sp._total`, na.rm=T)) %>%
+  na.omit() #Get rid of superfluous NA row
 
 #See whether totals and means are related
 #Culex from gravid traps
@@ -104,12 +106,12 @@ plot(cul_total ~ cul_mean, data = summ_grav)
 
 #Visualize using ggmaps
 #Get the New Orleans bounding box
-height <- max(summ_light$lat) - min(summ_light$lat)
-width <- max(summ_light$long) - min(summ_light$long)
-borders <- c(bottom  = min(summ_light$lat)  - 0.3 * height, 
-                 top     = max(summ_light$lat)  + 0.3 * height,
-                 left    = min(summ_light$long) - 0.3 * width,
-                 right   = max(summ_light$long) + 0.3 * width)
+height <- max(summ_grav$lat) - min(summ_grav$lat)
+width <- max(summ_grav$long) - min(summ_grav$long)
+borders <- c(bottom  = min(summ_grav$lat)  - 0.3 * height, 
+                 top     = max(summ_grav$lat)  + 0.3 * height,
+                 left    = min(summ_grav$long) - 0.3 * width,
+                 right   = max(summ_grav$long) + 0.3 * width)
 
 newheight = borders[2] - borders[1]
 newwidth = borders[4] - borders[3]
@@ -118,13 +120,13 @@ nola_stamen <- get_stamenmap(bbox = borders, zoom = 11, maptype = "terrain")
 map <- ggmap(nola_stamen)
 
 #Gravid traps with Aedes
-tiff(filename = "./2019/Gravid/12102019_Gravid_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw", type = "cairo")
-map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_total, size = aed_total))  + 
-  scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(summ_grav$aed_total, na.rm=T))) +
-  scale_size_continuous(limits = c(0, max(summ_grav$aed_total, na.rm=T))) +
+tiff(filename = "./2020/Gravid/Maps/Aedes/021820_Gravid_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type = "cairo")
+map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_mean, size = aed_mean))  + 
+  scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(grav$`Aedes sp._total`, na.rm=T))) +
+  scale_size_continuous(limits = c(0, max(summ_grav$aed_mean, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
-  ggtitle("12/10/2019 Gravid Traps") +
+  ggtitle("02/04/2020 Gravid Traps") +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=20, face = "bold"))
@@ -132,35 +134,34 @@ map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill 
 dev.off()
 
 #Gravid traps with Culex
-tiff(filename = "./2019/Gravid/121019_Gravid_Culex_R.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw", type="cairo")
-map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill = cul_total, size = cul_total))  + 
-                 scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(summ_grav$cul_total, na.rm=T))) +
-                 scale_size_continuous(limits = c(0, max(summ_grav$cul_total, na.rm=T))) +
+tiff(filename = "./2020/Gravid/Maps/Culex/021820_Gravid_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
+map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill = cul_mean, size = cul_mean))  + 
+                 scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(grav$`Culex sp._total`, na.rm=T))) +
+                 scale_size_continuous(limits = c(0, max(summ_grav$cul_mean, na.rm=T))) +
                  guides(size = F) +
                  labs(x = "Longitude", y = "Latitude") + 
-                 ggtitle("12/10/2019 Gravid Traps") +
+                 ggtitle("02/04/2020 Gravid Traps") +
                  theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
                        axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
-                       plot.title = element_text(size=20, face = "bold"))
-#+ geom_text(x=(borders[3] + (newwidth * 0.5)), y=(borders[2] - (newheight * 0.05)), label = "2019 Gravid Traps") 
+                       plot.title = element_text(size=20, face = "bold")) 
 dev.off()
 
-#For fun, try an emoji plot
-#Search for emojis
-emoji_search("smile")
-emoji_search("symbols_over_mouth")
-
-tiff(filename = "./2019/Gravid/emoji_110619_Gravid_Culex.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw", type = "cairo")
-map + 
-  geom_emoji(aes(x = long, y = lat), data= filter(summ_grav, cul_total < 15),  emoji="1f603", size = 0.0275) + 
-  geom_emoji(aes(x = long, y = lat), data= filter(summ_grav, cul_total >= 15),  emoji="1f92c", size = 0.0275) +
-  ggtitle("11/06/2019 Gravid Traps") 
-dev.off()
+# #For fun, try an emoji plot
+# #Search for emojis
+# emoji_search("smile")
+# emoji_search("symbols_over_mouth")
+# 
+# tiff(filename = "./2019/Gravid/emoji_110619_Gravid_Culex.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type = "cairo")
+# map + 
+#   geom_emoji(aes(x = long, y = lat), data= filter(summ_grav, cul_total < 15),  emoji="1f603", size = 0.0275) + 
+#   geom_emoji(aes(x = long, y = lat), data= filter(summ_grav, cul_total >= 15),  emoji="1f92c", size = 0.0275) +
+#   ggtitle("11/06/2019 Gravid Traps") 
+# dev.off()
 
 #Light traps with Aedes
-tiff(filename = "./2019/CDC Light/2019_Light_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw", type = "cairo")
+tiff(filename = "./2019/CDC Light/2019_Light_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type = "cairo")
 map + geom_point(data = summ_light, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_total, size = aed_total))  + 
-                  scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(summ_light$aed_total, na.rm=T))) +
+                  scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(light$`Aedes sp._total`, na.rm=T))) +
                   scale_size_continuous(limits = c(0, max(summ_light$aed_total, na.rm=T))) +
                   guides(size = F) +
                   labs(x = "Longitude", y = "Latitude") + 
@@ -172,9 +173,9 @@ map + geom_point(data = summ_light, pch=21, stroke = 1, aes(x=long, y= lat, fill
 dev.off()
 
 #Light traps with Culex
-tiff(filename = "./2019/CDC Light/121119_Light_Culex_R.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw", type = "cairo")
+tiff(filename = "./2019/CDC Light/121119_Light_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type = "cairo")
 map + geom_point(data = summ_light, pch=21, stroke = 1, aes(x=long, y= lat, fill = cul_total, size = cul_total))  + 
-  scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(summ_light$cul_total, na.rm=T))) +
+  scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(light$`Culex sp._total`, na.rm=T))) +
   scale_size_continuous(limits = c(0, max(summ_light$cul_total, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
@@ -186,7 +187,7 @@ map + geom_point(data = summ_light, pch=21, stroke = 1, aes(x=long, y= lat, fill
 dev.off()
 
 #BG traps with Aedes
-# tiff(filename = "2019_BG_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 300, compression = "lzw")
+# tiff(filename = "2019_BG_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw")
 # map + geom_point(data = summ_bg, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_total, size = aed_total))  + 
 #                   scale_fill_gradient(name= expression(italic(Culex)~"collected"), low = "green", high = "red", limits = c(0, max(bg$`Culex sp._total`, na.rm=T))) +
 #                   scale_size_continuous(limits = c(0, max(bg$`Culex sp._total`, na.rm=T))) +

@@ -23,7 +23,7 @@ library(RColorBrewer)
 library(viridisLite)
 library(reshape2)
 
-setwd("/Volumes/Mark Drive/NOLA/Mosquito Surveillance")
+setwd("~/Documents/Mosquito Surveillance")
 
 #Rain garden traps 
 light <- read_excel("Rain Gardens/2019_RainGarden_CDCLT.xlsx", sheet = 1)
@@ -45,18 +45,25 @@ total_mosq <- rowSums(sums)
 
 #Make a pie chart
 lbls = c("Cx. salinarius","Ae. vexans","An. crucians","Cx. restuans", "Cx. nigripalpus","Cx. quinquefasciatus","Other")
-slices = c(7187, 3842, 700, 550, 497, 338, rowSums(select(sums, -c(`Culex quinquefasciatus_m`,
-                                                                   `Culex quinquefasciatus_f`,
-                                                                   `Aedes vexans_m`,
-                                                                   `Aedes vexans_f`,
-                                                                   `Anopheles crucians_m`,
-                                                                   `Anopheles crucians_f`,
-                                                                   `Culex nigripalpus_m`,
-                                                                   `Culex nigripalpus_f`,
-                                                                   `Culex restuans_m`,
-                                                                   `Culex restuans_f`,
-                                                                   `Culex salinarius_m`,
-                                                                   `Culex salinarius_f`))))
+slices = c(sums$`Culex salinarius_m` + sums$`Culex salinarius_f`,
+           sums$`Aedes vexans_m` + sums$`Aedes vexans_f`, 
+           sums$`Anopheles crucians_m` + sums$`Anopheles crucians_f`,
+           sums$`Culex restuans_m` + sums$`Culex restuans_f`,
+           sums$`Culex nigripalpus_m` + sums$`Culex nigripalpus_f`,
+           sums$`Culex quinquefasciatus_m` + sums$`Culex quinquefasciatus_f`,
+             rowSums(select(sums, -c(
+             `Culex quinquefasciatus_m`,
+             `Culex quinquefasciatus_f`,
+             `Aedes vexans_m`,
+             `Aedes vexans_f`,
+             `Anopheles crucians_m`,
+             `Anopheles crucians_f`,
+             `Culex nigripalpus_m`,
+             `Culex nigripalpus_f`,
+             `Culex restuans_m`,
+             `Culex restuans_f`,
+             `Culex salinarius_m`,
+             `Culex salinarius_f`))))
 
 pct <- round(slices/sum(slices)*100)
 lbls <- paste(lbls, pct) # add percents to labels
@@ -137,3 +144,96 @@ for(address in (unique(light_gather$Address))) {
   print(plot)
   dev.off()
 }
+
+#Total the mosquito species for each address, then produce a report listing the top ten and the number captured
+light_report <- light %>%
+  mutate(`Culex quinquefasciatus` = `Culex quinquefasciatus_m` + `Culex quinquefasciatus_f`, 
+         `Aedes aegypti` = `Aedes aegypti_m` + `Aedes aegypti_f`, 
+         `Aedes albopictus` = `Aedes albopictus_m` + `Aedes albopictus_f`, 
+         `Aedes vexans` = `Aedes vexans_m` + `Aedes vexans_f`,
+         `Anopheles artropus` = `Anopheles artropus_m` + `Anopheles artropus_f`, 
+         `Anopheles bradleyi` = `Anopheles bradleyi_m` + `Anopheles bradleyi_f`, 
+         `Anopheles crucians` = `Anopheles crucians_m` + `Anopheles crucians_f`, 
+         `Anopheles perplexans` = `Anopheles perplexans_m` + `Anopheles perplexans_f`, 
+         `Anopheles punctipennis` = `Anopheles punctipennis_m` + `Anopheles punctipennis_f`, 
+         `Anopheles quadrimaculatus` = `Anopheles quadrimaculatus_m` + `Anopheles quadrimaculatus_f`, 
+         `Anopheles walkeri` = `Anopheles walkeri_m` + `Anopheles walkeri_f`, 
+         `Coquilletidia perturbans` = `Coquillettidia perturbans_m` + `Coquillettidia perturbans_f`, 
+         `Culex coronator` = `Culex coronator_m` + `Culex coronator_f`, 
+         `Culex erraticus` = `Culex erraticus_m` + `Culex erraticus_f`, 
+         `Culex nigripalpus` = `Culex nigripalpus_m` + `Culex nigripalpus_f`, 
+         `Culex restuans` = `Culex restuans_m` + `Culex restuans_f`, 
+         `Culex salinarius` = `Culex salinarius_m` + `Culex salinarius_f`, 
+         `Culex tarsalis` = `Culex tarsalis_m` + `Culex tarsalis_f`,
+         `Culex territans` = `Culex territans_m` + `Culex territans_f`,
+         `Culiseta inornata` = `Culiseta inornata_m` + `Culiseta inornata_f`,
+         `Culiseta melanura` = `Culiseta melanura_m` + `Culiseta melanura_f`,
+         `Mansonia dyari` = `Mansonia dyari_m` + `Mansonia dyari_f`,
+         `Mansonia titillans` = `Mansonia titillans_m` + `Mansonia titillans_f`,
+         `Aedes atlanticus` = `Aedes atlanticus_m` + `Aedes atlanticus_f`,
+         `Aedes canadensis` = `Aedes canadensis_m` + `Aedes canadensis_f`,
+         `Aedes dupreei` = `Aedes dupreei_m` + `Aedes dupreei_f`,
+         `Aedes infirmatus` = `Aedes infirmatus_m` + `Aedes infirmatus_f`,
+         `Aedes fulvus pallens` = `Aedes fulvus pallens_m` + `Aedes fulvus pallens_f`,
+         `Aedes canadensis mathesoni` = `Aedes canadensis mathesoni_m` + `Aedes canadensis mathesoni_f`,
+         `Aedes mitchellae` = `Aedes mitchellae_m` + `Aedes mitchellae_f`,
+         `Aedes sollicitans` = `Aedes sollicitans_m` + `Aedes sollicitans_f`,
+         `Aedes taeniorhynchus` = `Aedes taeniorhynchus_m` + `Aedes taeniorhynchus_f`,
+         `Aedes triseriatus` = `Aedes triseriatus_m` + `Aedes triseriatus_f`,
+         `Toxorhynchites rutilus` = `Toxorhynchites rutilus_m` + `Toxorhynchites rutilus_f`,
+         `Orthopodomyia alba` = `Orthopodomyia alba_m` + `Orthopodomyia alba_f`,
+         `Orthopodomyia signifera` = `Orthopodomyia signifera_m` + `Orthopodomyia signifera_f`,
+         `Psorophora ciliata` = `Psorophora ciliata_m` + `Psorophora ciliata_f`,
+         `Psorophora columbiae` = `Psorophora columbiae_m` + `Psorophora columbiae_f`,
+         `Psorophora cyanescens` = `Psorophora cyanescens_m` + `Psorophora cyanescens_f`,
+         `Psorophora ferox` = `Psorophora ferox_m` + `Psorophora ferox_f`,
+         `Psorophora howardii` = `Psorophora howardii_m` + `Psorophora howardii_f`,
+         `Psorophora mathesoni` = `Psorophora mathesoni_m` + `Psorophora mathesoni_f`,
+         `Uranotaenia lowii` = `Uranotaenia lowii_m` + `Uranotaenia lowii_f`,
+         `Uranotaenia sapphirina` = `Uranotaenia sapphirina_m` + `Uranotaenia sapphirina_f`) %>%
+  select(Address, Date, Week, 
+         `Culex quinquefasciatus`, 
+         `Aedes aegypti`, 
+         `Aedes albopictus`, 
+         `Aedes vexans`,
+         `Anopheles artropus`,
+         `Anopheles bradleyi`, 
+         `Anopheles crucians`, 
+         `Anopheles perplexans`, 
+         `Anopheles punctipennis`, 
+         `Anopheles quadrimaculatus` = `Anopheles quadrimaculatus_m` + `Anopheles quadrimaculatus_f`, 
+         `Anopheles walkeri` = `Anopheles walkeri_m` + `Anopheles walkeri_f`, 
+         `Coquilletidia perturbans` = `Coquillettidia perturbans_m` + `Coquillettidia perturbans_f`, 
+         `Culex coronator` = `Culex coronator_m` + `Culex coronator_f`, 
+         `Culex erraticus` = `Culex erraticus_m` + `Culex erraticus_f`, 
+         `Culex nigripalpus` = `Culex nigripalpus_m` + `Culex nigripalpus_f`, 
+         `Culex restuans` = `Culex restuans_m` + `Culex restuans_f`, 
+         `Culex salinarius` = `Culex salinarius_m` + `Culex salinarius_f`, 
+         `Culex tarsalis` = `Culex tarsalis_m` + `Culex tarsalis_f`,
+         `Culex territans` = `Culex territans_m` + `Culex territans_f`,
+         `Culiseta inornata` = `Culiseta inornata_m` + `Culiseta inornata_f`,
+         `Culiseta melanura` = `Culiseta melanura_m` + `Culiseta melanura_f`,
+         `Mansonia dyari` = `Mansonia dyari_m` + `Mansonia dyari_f`,
+         `Mansonia titillans` = `Mansonia titillans_m` + `Mansonia titillans_f`,
+         `Aedes atlanticus` = `Aedes atlanticus_m` + `Aedes atlanticus_f`,
+         `Aedes canadensis` = `Aedes canadensis_m` + `Aedes canadensis_f`,
+         `Aedes dupreei` = `Aedes dupreei_m` + `Aedes dupreei_f`,
+         `Aedes infirmatus` = `Aedes infirmatus_m` + `Aedes infirmatus_f`,
+         `Aedes fulvus pallens` = `Aedes fulvus pallens_m` + `Aedes fulvus pallens_f`,
+         `Aedes canadensis mathesoni` = `Aedes canadensis mathesoni_m` + `Aedes canadensis mathesoni_f`,
+         `Aedes mitchellae` = `Aedes mitchellae_m` + `Aedes mitchellae_f`,
+         `Aedes sollicitans` = `Aedes sollicitans_m` + `Aedes sollicitans_f`,
+         `Aedes taeniorhynchus` = `Aedes taeniorhynchus_m` + `Aedes taeniorhynchus_f`,
+         `Aedes triseriatus` = `Aedes triseriatus_m` + `Aedes triseriatus_f`,
+         `Toxorhynchites rutilus` = `Toxorhynchites rutilus_m` + `Toxorhynchites rutilus_f`,
+         `Orthopodomyia alba` = `Orthopodomyia alba_m` + `Orthopodomyia alba_f`,
+         `Orthopodomyia signifera` = `Orthopodomyia signifera_m` + `Orthopodomyia signifera_f`,
+         `Psorophora ciliata` = `Psorophora ciliata_m` + `Psorophora ciliata_f`,
+         `Psorophora columbiae` = `Psorophora columbiae_m` + `Psorophora columbiae_f`,
+         `Psorophora cyanescens` = `Psorophora cyanescens_m` + `Psorophora cyanescens_f`,
+         `Psorophora ferox` = `Psorophora ferox_m` + `Psorophora ferox_f`,
+         `Psorophora howardii` = `Psorophora howardii_m` + `Psorophora howardii_f`,
+         `Psorophora mathesoni` = `Psorophora mathesoni_m` + `Psorophora mathesoni_f`,
+         `Uranotaenia lowii` = `Uranotaenia lowii_m` + `Uranotaenia lowii_f`,
+         `Uranotaenia sapphirina` = `Uranotaenia sapphirina_m` + `Uranotaenia sapphirina_f`)
+

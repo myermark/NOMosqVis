@@ -3,7 +3,7 @@
 #
 # Author: Mark Myer
 #
-# Date: 3/5/2020
+# Date: 3/23/2020
 #
 # Purpose: To format and summarize data from mosquito surveillance for plotting
 #
@@ -25,7 +25,7 @@ library(emoGG)
 
 #Import data
 #Gravid traps
-grav <- read_excel("2020/Gravid/2020Gravid and pools_new.xlsx", sheet = 1) 
+grav <- read_excel("2020/Gravid/2020Gravid and pools.xlsx", sheet = 1) 
 
 grav <- grav %>%
         mutate(Date = as.Date(Date)) %>%
@@ -89,7 +89,7 @@ summ_light <- light_subset %>%
             aed_total = sum(`Aedes sp._total`, na.rm=T),
             aed_mean = mean(`Aedes sp._total`, na.rm=T))
 
-summ_bg <- bg %>%
+summ_bg <- bg_subset %>%
   group_by(FID) %>%
   summarize(address = calculate_mode(Address),
             long = median(Long),
@@ -189,24 +189,24 @@ map + geom_point(data = summ_light, pch=21, stroke = 1, aes(x=long, y= lat, fill
 dev.off()
 
 #BG traps with Aedes
-tiff(filename = "./2020/BG Sentinel/Maps/Aedes/030420_BG_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
+tiff(filename = "./2020/BG Sentinel/Maps/Aedes/031120_BG_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
 map + geom_point(data = summ_bg, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_total), size = 3)  + 
   scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(bg$`Aedes sp._total`, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
-  ggtitle("03/04/2020 BG Sentinel Traps") +
+  ggtitle("03/11/2020 BG Sentinel Traps") +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=20, face = "bold")) 
 dev.off()
 
 #BG traps with Culex
-tiff(filename = "./2020/BG Sentinel/Maps/Culex/030420_BG_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
+tiff(filename = "./2020/BG Sentinel/Maps/Culex/031120_BG_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
 map + geom_point(data = summ_bg, pch=21, stroke = 1, aes(x=long, y= lat, fill = cul_total), size = 3)  + 
   scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(bg$`Culex sp._total`, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
-  ggtitle("03/04/2020 BG Sentinel Traps") +
+  ggtitle("03/11/2020 BG Sentinel Traps") +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=20, face = "bold")) 

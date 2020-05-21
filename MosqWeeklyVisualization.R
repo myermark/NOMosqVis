@@ -3,7 +3,7 @@
 #
 # Author: Mark Myer
 #
-# Date: 5/14/2020
+# Date: 5/21/2020
 #
 # Purpose: To format and summarize data from mosquito surveillance for plotting
 #
@@ -124,13 +124,13 @@ nola_stamen <- get_stamenmap(bbox = borders, zoom = 11, maptype = "terrain")
 map <- ggmap(nola_stamen)
 
 #Gravid traps with Aedes
-tiff(filename = "./2020/Gravid/Maps/Aedes/051220_Gravid_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type = "cairo")
+tiff(filename = "./2020/Gravid/Maps/Aedes/051920_Gravid_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type = "cairo")
 map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_total), size = 3)  + 
   scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(grav$`Aedes sp._total`, na.rm=T))) +
   #scale_size_continuous(limits = c(0, max(summ_grav$aed_mean, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
-  ggtitle("05/12/2020 Gravid Traps") +
+  ggtitle("05/19/2020 Gravid Traps") +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=20, face = "bold"))
@@ -138,13 +138,13 @@ map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill 
 dev.off()
 
 #Gravid traps with Culex
-tiff(filename = "./2020/Gravid/Maps/Culex/051220_Gravid_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
+tiff(filename = "./2020/Gravid/Maps/Culex/051920_Gravid_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
 map + geom_point(data = summ_grav, pch=21, stroke = 1, aes(x=long, y= lat, fill = cul_total), size = 3)  + 
                  scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(grav$`Culex sp._total`, na.rm=T))) +
                  #scale_size_continuous(limits = c(0, max(summ_grav$cul_mean, na.rm=T))) +
                  guides(size = F) +
                  labs(x = "Longitude", y = "Latitude") + 
-                 ggtitle("05/12/2020 Gravid Traps") +
+                 ggtitle("05/19/2020 Gravid Traps") +
                  theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
                        axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
                        plot.title = element_text(size=20, face = "bold")) 
@@ -205,24 +205,24 @@ map + geom_point(data = summ_light, pch=21, stroke = 1, aes(x=long, y= lat, fill
 dev.off()
 
 #BG traps with Aedes
-tiff(filename = "./2020/BG Sentinel/Maps/Aedes/051220_BG_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
+tiff(filename = "./2020/BG Sentinel/Maps/Aedes/051920_BG_Aedes_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
 map + geom_point(data = summ_bg, pch=21, stroke = 1, aes(x=long, y= lat, fill = aed_total), size = 3)  + 
   scale_fill_gradient(name= expression(italic("Aedes")~"collected"), low = "green", high = "red", limits = c(0, max(bg$`Aedes sp._total`, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
-  ggtitle("05/12/2020 BG Sentinel Traps") +
+  ggtitle("05/19/2020 BG Sentinel Traps") +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=20, face = "bold")) 
 dev.off()
 
 #BG traps with Culex
-tiff(filename = "./2020/BG Sentinel/Maps/Culex/051220_BG_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
+tiff(filename = "./2020/BG Sentinel/Maps/Culex/051920_BG_Culex_R.tiff", height = 8, width = 9, units = "in", res = 120, compression = "lzw", type="cairo")
 map + geom_point(data = summ_bg, pch=21, stroke = 1, aes(x=long, y= lat, fill = cul_total), size = 3)  + 
   scale_fill_gradient(name= expression(italic("Culex")~"collected"), low = "green", high = "red", limits = c(0, max(bg$`Culex sp._total`, na.rm=T))) +
   guides(size = F) +
   labs(x = "Longitude", y = "Latitude") + 
-  ggtitle("05/12/2020 BG Sentinel Traps") +
+  ggtitle("05/19/2020 BG Sentinel Traps") +
   theme(axis.title.x = element_text(color = "black", size = 14, face = "bold"),
         axis.title.y = element_text(color = "black", size = 14, face = "bold"), 
         plot.title = element_text(size=20, face = "bold")) 
